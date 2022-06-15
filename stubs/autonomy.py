@@ -145,16 +145,16 @@ def main():
                 
                 path.reverse() # reverse so closest wp is last so that pop() is cheap
                 
-                list_of_xs = []
-                list_of_ys = []
-                for i in path:
-                    list_of_xs.append(i.x)
-                    list_of_ys.append(i.y)
-                print(len(list_of_xs))
-                print(len(list_of_ys))
-                plt.plot(list_of_xs, list_of_ys)
-                plt.gca().invert_yaxis()
-                plt.show()
+                # list_of_xs = []
+                # list_of_ys = []
+                # for i in path:
+                #     list_of_xs.append(i.x)
+                #     list_of_ys.append(i.y)
+                # print(len(list_of_xs))
+                # print(len(list_of_ys))
+                # plt.plot(list_of_xs, list_of_ys)
+                # plt.gca().invert_yaxis()
+                # plt.show()
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
                 

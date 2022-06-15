@@ -4,7 +4,7 @@ host: '0.0.0.0'
 port: 5566
 
 # map
-map_file: '/mnt/c/Users/user/Downloads/til-final-2022.1.1-lower/til-final-2022.1.1-lower/data/maps/map_complex_1cm.png'
+map_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/maps/map_complex_1cm.png'
 map_scale: 0.01
 
 # display
@@ -23,26 +23,27 @@ pos_noise_stddev: 0.05
 proxy_real_robot: off
 proxy_host: 'localhost'
 proxy_port: 5566
+
 # logging
 log_level: 'debug'
 
 # clues
 clues:
-  - clue_id: 1
+  - clue_id: 2
     trigger:
-      x: 1.0
-      y: 1.0
-      r: 0.5
-    location:
       x: 4.0
       y: 3.0
-    audio_file: '/mnt/c/Users/user/Downloads/til-final-2022.1.1-lower/til-final-2022.1.1-lower/data/audio/SM4_F48_A0100.wav'
+      r: 0.5
+    location:
+      x: 1.0
+      y: 1.0
+    audio_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
 
 # targets
 targets:
   - target_id: 1
     trigger:
-      x: 2.0
-      y: 2.0
+      x: 4.0
+      y: 4.0
       r: 0.2
-    image_file: '/mnt/c/Users/user/Downloads/til-final-2022.1.1-lower/til-final-2022.1.1-lower/data/imgs/fallen_person.jpeg'
+    image_file: '<some_image_file>'

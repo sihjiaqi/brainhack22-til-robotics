@@ -1,5 +1,4 @@
 import logging
-from os import PRIO_PGRP
 from typing import List
 
 from tilsdk import *                                            # import the SDK
@@ -76,43 +75,43 @@ def main():
 
     # Define filter function to exclude clues seen before   
     new_clues = lambda c: c.clue_id not in seen_clues
-    print("new", new_clues)
-    print("seen", seen_clues)
+    # print("new", new_clues)
+    # print("seen", seen_clues)
 
     # Main loop
     while True:
         # Get new data
         pose, clues = loc_service.get_pose()
-        print("pose", pose)
-        print('clues id', clues[0][0], 'area of interest', clues[0][1])
+        # print("pose", pose)
+        # print('clues id', clues[0][0], 'area of interest', clues[0][1])
         pose = pose_filter.update(pose)
-        print("pose2", pose)
+        #print("pose2", pose)
 
         # capture image
         img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
-        print(pose)
+        #print(pose)
 
         if not pose:
             # If no pose
 
             continue
         
-        print('clues:', filter(new_clues, clues))
+        #print('clues:', filter(new_clues, clues))
         # Filter out clues that were seen before
         clues = filter(new_clues, clues)
 
         # Process clues using NLP and determine any new locations of interest
         test = lois
-        print("Current lois:", test )
+        #print("Current lois:", test )
         
         if clues: # if there is new clue
             
             #In the case of new clues, extract their locations as new location of interest 
             new_lois = nlp_service.locations_from_clues(clues)
-            print("New", new_lois)
-            print("Old", lois)
+            # print("New", new_lois)
+            # print("Old", lois)
             update_locations(lois, new_lois)
-            print("Changed", lois)
+            # print("Changed", lois)
 
             #Record clues seen before
             seen_clues.update([c.clue_id for c in clues])
@@ -142,22 +141,45 @@ def main():
                 logging.getLogger('Main').info('Planning path to: {}'.format(curr_loi))
                 
                 path = planner.plan(pose[:2], curr_loi)
+                #print('path', path)
+                
                 path.reverse() # reverse so closest wp is last so that pop() is cheap
+                
+                list_of_xs = []
+                list_of_ys = []
+                for i in path:
+                    list_of_xs.append(i.x)
+                    list_of_ys.append(i.y)
+                print(len(list_of_xs))
+                print(len(list_of_ys))
+                plt.plot(list_of_xs, list_of_ys)
+                plt.gca().invert_yaxis()
+                plt.show()
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
+                
         else:
             # There is a current LOI objective.
             # Continue with navigation along current path.
             if path:
                 # Get next waypoint
                 if not curr_wp:
+                    #Obtain the path step
                     curr_wp = path.pop()
                     logging.getLogger('Navigation').info('New waypoint: {}'.format(curr_wp))
                 
                 # Calculate distance and heading to waypoint
+
                 dist_to_wp = euclidean_distance(pose, curr_wp)
+                #print(dist_to_wp)
+
+                
                 ang_to_wp = np.degrees(np.arctan2(curr_wp[1]-pose[1], curr_wp[0]-pose[0]))
+                #print(ang_to_wp)
+                
                 ang_diff = -(ang_to_wp - pose[2]) # body frame
+                #print(ang_diff)
+                
 
                 # ensure ang_diff is in [-180, 180]
                 if ang_diff < -180:
@@ -170,13 +192,19 @@ def main():
 
                 # Consider waypoint reached if within a threshold distance
                 if dist_to_wp < REACHED_THRESHOLD_M:
+                    #print('Done liao')
                     logging.getLogger('Navigation').info('Reached wp: {}'.format(curr_wp))
                     tracker.reset()
                     curr_wp = None
                     continue
                 
+               
+                
                 # Determine velocity commands given distance and heading to waypoint
                 vel_cmd = tracker.update((dist_to_wp, ang_diff))
+                #print('vel_cmd', vel_cmd)
+
+                #return None
 
                 # reduce x velocity
                 vel_cmd[0] *= np.cos(np.radians(ang_diff))
@@ -185,6 +213,8 @@ def main():
                 # moving forward.
                 if abs(ang_diff) > ANGLE_THRESHOLD_DEG:
                     vel_cmd[0] = 0.0
+                #print("abs(ang_diff) > ANGLE_THRESHOLD_DEG", abs(ang_diff) > ANGLE_THRESHOLD_DEG)
+
                 
                 # Send command to robot
                 robot.chassis.drive_speed(x=vel_cmd[0], z=vel_cmd[1])
@@ -192,14 +222,15 @@ def main():
             else:
                 logging.getLogger('Navigation').info('End of path.')
                 curr_loi = None
+                return None
 
-                # TODO: Perform search behaviour? Participant to complete.
+            #     # TODO: Perform search behaviour? Participant to complete.
                 
-                continue
+            #     continue
 
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety
     logging.getLogger('Main').info('Mission Terminated.')
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     main()

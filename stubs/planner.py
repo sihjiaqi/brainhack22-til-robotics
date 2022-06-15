@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+from re import X
 from typing import List, Tuple, TypeVar, Dict
 from tilsdk.localization import *
 import heapq
@@ -20,7 +21,7 @@ class PriorityQueue:
         heapq.heappush(self.elements, (priority, item))
 
     def get(self) -> T:
-        return heapq.heappop(self.elements)[1]
+        return heapq.heappop(self.elements)
 
 
 class Planner:
@@ -34,6 +35,15 @@ class Planner:
             Relative weight of distance in cost function.
         '''
         self.map = map_
+        self.coord_grid = [] 
+
+        for row in range(self.map.height):
+            coord_row = []
+            for col in range(self.map.width):
+                coord_row.append(GridLocation(col, row))
+        
+            self.coord_grid.append(coord_row)
+        
         self.sdf_weight = sdf_weight
 
     def update_map(self, map:SignedDistanceGrid):
@@ -71,6 +81,7 @@ class Planner:
         '''
 
         path = self.plan_grid(self.map.real_to_grid(start), self.map.real_to_grid(goal))
+        #print(path)
         return [self.map.grid_to_real(wp) for wp in path]
 
     def plan_grid(self, start:GridLocation, goal:GridLocation) -> List[GridLocation]:
@@ -90,26 +101,59 @@ class Planner:
         path
             List of GridLocation from start to goal.
         '''
-
+        count = 0
+        # print(self.map)
+        # print(self.map.grid)
+        # print(self.map.width)
+        # print(self.map.height)
+        # print(min(self.map.grid[0]))
         if not self.map:
             raise RuntimeError('Planner map is not initialized.')
-
+    
         frontier = PriorityQueue()
-        frontier.put(start, 0)
-        came_from: Dict[GridLocation, GridLocation] = {}
-        cost_so_far: Dict[GridLocation, float] = {}
-        came_from[start] = None
-        cost_so_far[start] = 0
+        frontier.put(0, (0, start))
 
+        came_from: Dict[GridLocation, GridLocation] = {}
+        #cost_so_far: Dict[GridLocation, float] = {}
+        came_from[start] = None
+        #print(goal)
+        #cost_so_far[start] = 0
+
+        g_score = {node: float('inf') for row in self.coord_grid for node in row}
+        g_score[start] = 0
+        f_score = {node: float('inf') for row in self.coord_grid for node in row}
+        f_score[start] = self.heuristic(start, goal)
+        open_set_hash = {start}
+        #print('hash',open_set_hash)
         while not frontier.is_empty():
             
             # TODO: Participant to complete.
+            current = frontier.get()[0][1]
+            #print('now', current)
+            #print(g_score[current])
+            #print('Current:', current)
+            #print('Goal:', goal)
 
-            pass
-        
+            neightbors = self.map.neighbours(current)
+            for neighbor in neightbors:
+                temp_g_score = g_score[current] + 1
+                
+                if temp_g_score < g_score[neighbor[0]]:
+                    came_from[neighbor[0]] = current
+                    g_score[neighbor[0]] = temp_g_score
+                    f_score[neighbor[0]] = temp_g_score + self.heuristic(neighbor[0], goal)
+                    if neighbor not in open_set_hash:
+                        count += 1
+                        frontier.put(count, (f_score[neighbor[0]], neighbor[0]))
+                        #print('Inserted', count, (f_score[neighbor[0]], neighbor[0]))
+                        open_set_hash.add(neighbor[0])
+
+
         if goal not in came_from:
             raise NoPathFoundException
-
+        
+        print('done')
+        
         return self.reconstruct_path(came_from, start, goal)
 
     def reconstruct_path(self,
@@ -142,3 +186,4 @@ class Planner:
         # path.append(start)
         path.reverse()
         return path
+

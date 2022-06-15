@@ -1,4 +1,5 @@
 import logging
+from re import X
 from typing import List
 
 from tilsdk import *                                            # import the SDK
@@ -55,6 +56,8 @@ def main():
  
     # Initialize planner
     map_:SignedDistanceGrid = loc_service.get_map()
+    print("map_ jq print width", map_.width)
+    print("map_ jq print pixel", map_.grid[300][699])
     map_ = map_.dilated(1.5*ROBOT_RADIUS_M/map_.scale)
     planner = Planner(map_, sdf_weight=0.5)
 
@@ -68,7 +71,7 @@ def main():
 
     # Initialize tracker
     # TODO: Participant to tune PID controller values.
-    tracker = PIDController(Kp=(0.0, 0.0), Kd=(0.0, 0.0), Ki=(0.0, 0.0)) #an instrument used in industrial control applications to regulate variables
+    tracker = PIDController(Kp=(1.0, 2.0), Kd=(0.0, 0.0), Ki=(0.0, 0.0)) #an instrument used in industrial control applications to regulate variables
 
     # Initialize pose filter
     pose_filter = SimpleMovingAverage(n=5) 
@@ -129,9 +132,38 @@ def main():
                 logging.getLogger('Main').info('No more locations of interest.')
                 # TODO: You ran out of LOIs. You could perform and random search for new
                 # clues or targets
-                break
-            else:
+                # date: 15/06 modified by jq and sy
+                # -----------------------------------------------------------------------------------------------------------------
+
+                while True:
+                    # generate random pixel combination of grid coord
+                    x = np.random.randint(0, map_.width)
+                    y = np.random.randint(0, map_.height)
+
+                    # check if LOI is an passable
+                    if map_.grid[y][x] > 0:
+                        break
+
+                real_width = x * map_.scale
+                real_height = y * map_.scale
+                print("real width jq", real_width)
+                print("real height jqq", real_height)
+
+                curr_loi = RealLocation(real_width, real_height)
+                logging.getLogger('Main').info('Current LOI set to: {}'.format(curr_loi))
+
+                # Plan a path to the new LOI
+                logging.getLogger('Main').info('Planning path to: {}'.format(curr_loi))
                 
+                path = planner.plan(pose[:2], curr_loi)
+                path.reverse() # reverse so closest wp is last so that pop() is cheap
+                
+                curr_wp = None
+                logging.getLogger('Main').info('Path planned.')
+
+                # -----------------------------------------------------------------------------------------------------------
+
+            else:
                 # Get new LOI
                 lois.sort(key=lambda l: euclidean_distance(l, pose), reverse=True)
                 curr_loi = lois.pop()

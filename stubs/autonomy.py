@@ -1,5 +1,6 @@
 import logging
 from re import X
+from socket import timeout
 from typing import List
 
 from tilsdk import *                                            # import the SDK
@@ -7,6 +8,7 @@ from tilsdk.utilities import PIDController, SimpleMovingAverage # import optiona
 from tilsdk.mock_robomaster.robot import Robot                  # Use this for the simulator
 #from robomaster.robot import Robot                             # Use this for real robot
 
+import time
 # Import your code
 from cv_service import CVService, MockCVService
 from nlp_service import MockNLPService
@@ -101,7 +103,7 @@ def main():
         
         #print('clues:', filter(new_clues, clues))
         # Filter out clues that were seen before
-        clues = filter(new_clues, clues)
+        clues = list(filter(new_clues, clues))
 
         # Process clues using NLP and determine any new locations of interest
         #print("Current lois:", test )
@@ -127,6 +129,7 @@ def main():
             logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
         
         if not curr_loi:
+            print(len(lois))
             if len(lois) == 0:
                 logging.getLogger('Main').info('No more locations of interest.')
                 # TODO: You ran out of LOIs. You could perform and random search for new
@@ -137,7 +140,7 @@ def main():
                 while True:
                     # generate random pixel combination of grid coord
                     x = np.random.randint(0, map_.width/2)
-                    y = np.random.randint(0, map_.height/2)
+                    y = np.random.randint(0, map_.height)
 
                     # check if LOI is an passable
                     if map_.grid[y][x] > 0:
@@ -165,7 +168,10 @@ def main():
             else:
                 # Get new LOI
                 lois.sort(key=lambda l: euclidean_distance(l, pose), reverse=True)
+                
                 curr_loi = lois.pop()
+
+                
                 logging.getLogger('Main').info('Current LOI set to: {}'.format(curr_loi))
 
                 # Plan a path to the new LOI
@@ -188,7 +194,7 @@ def main():
                 # plt.show()
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
-                
+            
         else:
             # There is a current LOI objective.
             # Continue with navigation along current path.
@@ -255,19 +261,21 @@ def main():
                 logging.getLogger('Navigation').info('End of path.')
                 curr_loi = None
                 #return None
-
-                # TODO: Perform search behaviour? Participant to complete.
                 
-                # continue
-                print("testing starts here")
-                # robot not moving
-                dist_to_wp = 0
-                # default rotation angle
-                ang_diff = 15
-                vel_cmd = tracker.update((0, ang_diff))
-                # Send command to robot
-                robot.chassis.drive_speed(x=vel_cmd[0], z=vel_cmd[1])
+                # TODO: Perform search behaviour? Participant to complete.\
 
+                for i in range(8):
+                    robot.chassis.drive_speed(z=90)
+                    time.sleep(1.5)
+                    img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
+                    targets = cv_service.targets_from_image(img)
+                    
+                    # Submit targets
+                    if targets:
+                        logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
+                        logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+                continue
+        
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety
     logging.getLogger('Main').info('Mission Terminated.')
 

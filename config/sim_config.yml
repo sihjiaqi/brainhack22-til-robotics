@@ -34,8 +34,8 @@ clues:
       y: 4.5
       r: 0.5
     location:
-      x: 0.5
-      y: 1.5
+      x: 3
+      y: 3
     audio_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
 
 # targets

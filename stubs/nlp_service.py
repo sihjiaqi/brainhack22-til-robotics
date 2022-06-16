@@ -13,7 +13,7 @@ class NLPService:
         model_dir : str
             Path of model file to load.
         '''
-        self.sess = ort.InferenceSession("/content/drive/MyDrive/Colab Notebooks/NLP/ONNX/nlp_model.onnx", providers=["CUDAExecutionProvider"])
+        self.sess = ort.InferenceSession("C:\Users\joswong\OneDrive - NVIDIA Corporation\Documents\GitHub\brainhack22_robotics\model\nlp_model.onnx", providers=["CUDAExecutionProvider"])
         self.input_name1 = self.sess.get_inputs()[0].name
         self.input_name2 = self.sess.get_inputs()[1].name
         self.output_name = self.sess.get_outputs()[0].name
@@ -48,10 +48,10 @@ class NLPService:
         return locations
 
     def convert_to_mfcc(self, audio):
-        mfccs = librosa.feature.mfcc(audio, sr=22050, n_fft=2048, hop_length=512, n_mfcc=256)
+        mfccs = librosa.feature.mfcc(audio, sr=22050, n_fft=2048, hop_length=512, n_mfcc=13)
 
         if mfccs.shape[1] < 151:
-            result = np.zeros((n_mfcc,151 - mfccs.shape[1]),dtype=float)
+            result = np.zeros((13,151 - mfccs.shape[1]),dtype=float)
             new_mfcc = np.hstack((mfccs,result))
             return new_mfcc
         else:
@@ -62,7 +62,7 @@ class NLPService:
         S_DB = librosa.power_to_db(mel_spec, ref=np.max)
 
         if S_DB.shape[1] < 151:
-            result = np.zeros((n_mels,151 - S_DB.shape[1]),dtype=float)
+            result = np.zeros((256,151 - S_DB.shape[1]),dtype=float)
             new_melspec = np.hstack((S_DB,result))
             return new_melspec
         else:

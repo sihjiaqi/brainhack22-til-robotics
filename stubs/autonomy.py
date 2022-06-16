@@ -104,7 +104,6 @@ def main():
         clues = filter(new_clues, clues)
 
         # Process clues using NLP and determine any new locations of interest
-        test = lois
         #print("Current lois:", test )
         
         if clues: # if there is new clue
@@ -255,11 +254,11 @@ def main():
             else:
                 logging.getLogger('Navigation').info('End of path.')
                 curr_loi = None
-                return None
+                #return None
 
-            #     # TODO: Perform search behaviour? Participant to complete.
+                # TODO: Perform search behaviour? Participant to complete.
                 
-            #     continue
+                continue
 
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety
     logging.getLogger('Main').info('Mission Terminated.')

@@ -56,8 +56,8 @@ def main():
  
     # Initialize planner
     map_:SignedDistanceGrid = loc_service.get_map()
-    print("map_ jq print width", map_.width)
-    print("map_ jq print pixel", map_.grid[300][699])
+    # print("map_ jq print width", map_.width)
+    # print("map_ jq print pixel", map_.grid[300][699])
     map_ = map_.dilated(1.5*ROBOT_RADIUS_M/map_.scale)
     planner = Planner(map_, sdf_weight=0.5)
 
@@ -136,8 +136,8 @@ def main():
 
                 while True:
                     # generate random pixel combination of grid coord
-                    x = np.random.randint(0, map_.width)
-                    y = np.random.randint(0, map_.height)
+                    x = np.random.randint(0, map_.width/2)
+                    y = np.random.randint(0, map_.height/2)
 
                     # check if LOI is an passable
                     if map_.grid[y][x] > 0:
@@ -258,7 +258,15 @@ def main():
 
                 # TODO: Perform search behaviour? Participant to complete.
                 
-                continue
+                # continue
+                print("testing starts here")
+                # robot not moving
+                dist_to_wp = 0
+                # default rotation angle
+                ang_diff = 15
+                vel_cmd = tracker.update((0, ang_diff))
+                # Send command to robot
+                robot.chassis.drive_speed(x=vel_cmd[0], z=vel_cmd[1])
 
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety
     logging.getLogger('Main').info('Mission Terminated.')

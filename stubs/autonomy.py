@@ -68,7 +68,7 @@ def main():
 
     # Initialize tracker
     # TODO: Participant to tune PID controller values.
-    tracker = PIDController(Kp=(0.0, 0.0), Kd=(0.0, 0.0), Ki=(0.0, 0.0)) #an instrument used in industrial control applications to regulate variables
+    tracker = PIDController(Kp=(1, 6), Kd=(0.0, 0.0), Ki=(0.0, 0.0)) #an instrument used in industrial control applications to regulate variables
 
     # Initialize pose filter
     pose_filter = SimpleMovingAverage(n=5) 
@@ -201,6 +201,7 @@ def main():
                
                 
                 # Determine velocity commands given distance and heading to waypoint
+                #print(('dwp, ang', dist_to_wp, ang_diff))
                 vel_cmd = tracker.update((dist_to_wp, ang_diff))
                 #print('vel_cmd', vel_cmd)
 

@@ -12,8 +12,8 @@ robot_radius: 10
 
 # simulation
 start_pose:
-  x: 4.0
-  y: 3.0
+  x: 0.2
+  y: 0.2
   z: 0.0
 use_noisy_pose: off
 robot_phy_length: 0.32
@@ -31,19 +31,19 @@ log_level: 'debug'
 clues:
   - clue_id: 2
     trigger:
-      x: 4.0
-      y: 3.0
+      x: 0.2
+      y: 0.2
       r: 0.5
     location:
-      x: 1.0
-      y: 1.0
-    audio_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
+      x: 4.0
+      y: 0.2
+    audio_file: 'c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
 
 # targets
 targets:
   - target_id: 1
     trigger:
-      x: 4.0
-      y: 4.0
+      x: 3.7
+      y: 0.3
       r: 0.2
     image_file: '<some_image_file>'

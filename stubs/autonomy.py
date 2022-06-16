@@ -11,7 +11,7 @@ from tilsdk.mock_robomaster.robot import Robot                  # Use this for t
 import time
 # Import your code
 from cv_service import CVService, MockCVService
-from nlp_service import MockNLPService
+from nlp_service import NLPService, MockNLPService
 from planner import Planner
 import matplotlib.pyplot as plt
 
@@ -41,7 +41,7 @@ def main():
     # Initialize services
     #cv_service = CVService(model_dir=CV_MODEL_DIR)
     cv_service = MockCVService(model_dir=CV_MODEL_DIR)
-    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
+    nlp_service = NLPService(model_dir=NLP_MODEL_DIR)
 
     # Input output
     # loc and rep should have the same port number
@@ -109,8 +109,8 @@ def main():
         #print("Current lois:", test )
         
         if clues: # if there is new clue
-            
-            #In the case of new clues, extract their locations as new location of interest 
+            print(clues)
+            #In the case of new clues, extract their locations as new location of interest p
             new_lois = nlp_service.locations_from_clues(clues)
             # print("New", new_lois)
             # print("Old", lois)

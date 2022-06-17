@@ -40,7 +40,7 @@ def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
 def main():
     # Initialize services
     cv_service = MockCVService(model_dir=CV_MODEL_DIR)
-    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
+    nlp_service = NLPService(model_dir=NLP_MODEL_DIR)
 
     # Input output
     # loc and rep should have the same port number

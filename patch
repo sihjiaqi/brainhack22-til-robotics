@@ -1,0 +1,22 @@
+commit 4599c7f997c497e11ed2e0bbdcbb7af50cc50d57
+Author: Jia Qi <sihjiaqi@gmail.com>
+Date:   Fri Jun 17 14:23:47 2022 +0800
+
+    CV
+
+diff --git a/.gitignore b/.gitignore
+index df49575..5172ad8 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -129,4 +129,4 @@ dmypy.json
+ .pyre/
+ 
+ # cv onnx model
+-# /model/cv_model.onnx
+\ No newline at end of file
++/model/cv_model.onnx
+\ No newline at end of file
+diff --git a/model/cv_model.onnx b/model/cv_model.onnx
+deleted file mode 100644
+index 637c273..0000000
+Binary files a/model/cv_model.onnx and /dev/null differ

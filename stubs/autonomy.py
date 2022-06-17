@@ -11,7 +11,7 @@ from tilsdk.mock_robomaster.robot import Robot                  # Use this for t
 import time
 # Import your code
 from cv_service import CVService, MockCVService
-from nlp_service import MockNLPService
+from nlp_service import NLPService, MockNLPService
 from planner import Planner
 import matplotlib.pyplot as plt
 
@@ -22,9 +22,9 @@ logging.basicConfig(level=logging.INFO,
 
 # Define config variables in an easily accessible location
 # You may consider using a config file
-REACHED_THRESHOLD_M = 0.3   # TODO: Participant may tune.
+REACHED_THRESHOLD_M = 0.25   # TODO: Participant may tune.
 ANGLE_THRESHOLD_DEG = 20.0  # TODO: Participant may tune.
-ROBOT_RADIUS_M = 0.17       # TODO: Participant may tune.
+ROBOT_RADIUS_M = 0.25       # TODO: Participant may tune.
 NLP_MODEL_DIR = ''          # TODO: Participant to fill in.
 CV_MODEL_DIR = ''           # TODO: Participant to fill in.
 
@@ -39,7 +39,6 @@ def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
 
 def main():
     # Initialize services
-    #cv_service = CVService(model_dir=CV_MODEL_DIR)
     cv_service = MockCVService(model_dir=CV_MODEL_DIR)
     nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
 
@@ -73,7 +72,7 @@ def main():
 
     # Initialize tracker
     # TODO: Participant to tune PID controller values.
-    tracker = PIDController(Kp=(1.0, 2.0), Kd=(0.0, 0.0), Ki=(0.0, 0.0)) #an instrument used in industrial control applications to regulate variables
+    tracker = PIDController(Kp=(0.55, 0.55), Kd=(0.3, 0.3), Ki=(0.5, 0.5)) #an instrument used in industrial control applications to regulate variables
 
     # Initialize pose filter
     pose_filter = SimpleMovingAverage(n=5) 
@@ -94,11 +93,17 @@ def main():
 
         # capture image
         img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
-        #print(pose)
+
+        # return None
+        # from PIL import Image
+        import cv2
+        
+        img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
+    
+        # return None
 
         if not pose:
             # If no pose
-
             continue
         
         #print('clues:', filter(new_clues, clues))
@@ -109,18 +114,18 @@ def main():
         #print("Current lois:", test )
         
         if clues: # if there is new clue
-            
-            #In the case of new clues, extract their locations as new location of interest 
+            #print(clues)
+            #In the case of new clues, extract their locations as new location of interest p
             new_lois = nlp_service.locations_from_clues(clues)
             # print("New", new_lois)
             # print("Old", lois)
             update_locations(lois, new_lois)
-            # print("Changed", lois)
 
             #Record clues seen before
             seen_clues.update([c.clue_id for c in clues])
 
-        # Process image and detect targets
+        # return None
+        img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
         targets = cv_service.targets_from_image(img)
 
         # Submit targets
@@ -134,8 +139,6 @@ def main():
                 logging.getLogger('Main').info('No more locations of interest.')
                 # TODO: You ran out of LOIs. You could perform and random search for new
                 # clues or targets
-                # date: 15/06 modified by jq and sy
-                # -----------------------------------------------------------------------------------------------------------------
 
                 while True:
                     # generate random pixel combination of grid coord
@@ -162,8 +165,6 @@ def main():
                 
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
-
-                # -----------------------------------------------------------------------------------------------------------
 
             else:
                 # Get new LOI
@@ -265,8 +266,10 @@ def main():
                 # TODO: Perform search behaviour? Participant to complete.\
 
                 for i in range(8):
-                    robot.chassis.drive_speed(z=90)
-                    time.sleep(1.5)
+                    robot.chassis.drive_speed(z=22.5)
+                    time.sleep(2.5)
+                    robot.chassis.drive_speed(x=0, y=0, z=0)
+                    time.sleep(2.5)
                     img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
                     targets = cv_service.targets_from_image(img)
                     

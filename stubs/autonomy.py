@@ -14,6 +14,7 @@ from cv_service import CVService, MockCVService
 from nlp_service import NLPService, MockNLPService
 from planner import Planner
 import matplotlib.pyplot as plt
+import multiprocessing
 
 # Setup logging in a nice readable format
 logging.basicConfig(level=logging.INFO,
@@ -25,8 +26,9 @@ logging.basicConfig(level=logging.INFO,
 REACHED_THRESHOLD_M = 0.25   # TODO: Participant may tune.
 ANGLE_THRESHOLD_DEG = 20.0  # TODO: Participant may tune.
 ROBOT_RADIUS_M = 0.25       # TODO: Participant may tune.
-NLP_MODEL_DIR = ''          # TODO: Participant to fill in.
-CV_MODEL_DIR = ''           # TODO: Participant to fill in.
+NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/nlp_model.onnx"          # TODO: Participant to fill in.
+CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
+
 
 # Convenience function to update locations of interest.
 def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
@@ -39,8 +41,8 @@ def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
 
 def main():
     # Initialize services
-    cv_service = MockCVService(model_dir=CV_MODEL_DIR)
-    nlp_service = NLPService(model_dir=NLP_MODEL_DIR)
+    cv_service = CVService(model_dir=CV_MODEL_DIR)
+    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
 
     # Input output
     # loc and rep should have the same port number
@@ -83,6 +85,8 @@ def main():
     # print("seen", seen_clues)
 
     # Main loop
+
+    
     while True:
         # Get new data
         pose, clues = loc_service.get_pose()
@@ -94,10 +98,6 @@ def main():
         # capture image
         img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
 
-        # return None
-        # from PIL import Image
-        import cv2
-        
         img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
     
         # return None
@@ -126,6 +126,7 @@ def main():
 
         # return None
         img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+
         targets = cv_service.targets_from_image(img)
 
         # Submit targets
@@ -270,7 +271,7 @@ def main():
                     time.sleep(2.5)
                     robot.chassis.drive_speed(x=0, y=0, z=0)
                     time.sleep(2.5)
-                    img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
+                    #img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
                     targets = cv_service.targets_from_image(img)
                     
                     # Submit targets

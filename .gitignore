@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # cv onnx model
-/model/cv_model.onnx
+/model/cv_onnx_model.onnx

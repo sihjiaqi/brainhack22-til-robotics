@@ -96,7 +96,7 @@ class MockNLPService:
         model_dir : str
             Path of model file to load.
         '''
-        self.sess = ort.InferenceSession("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/nlp_model.onnx", providers=["CUDAExecutionProvider"])
+        self.sess = ort.InferenceSession(model_dir, providers=["CUDAExecutionProvider"])
         self.input_name1 = self.sess.get_inputs()[0].name
         self.input_name2 = self.sess.get_inputs()[1].name
         self.output_name = self.sess.get_outputs()[0].name

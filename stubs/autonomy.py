@@ -26,8 +26,8 @@ logging.basicConfig(level=logging.INFO,
 REACHED_THRESHOLD_M = 0.25   # TODO: Participant may tune.
 ANGLE_THRESHOLD_DEG = 20.0  # TODO: Participant may tune.
 ROBOT_RADIUS_M = 0.25       # TODO: Participant may tune.
-NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/nlp_model.onnx"          # TODO: Participant to fill in.
-CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
+NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/nlp_model.onnx"          # TODO: Participant to fill in.
+CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
 
 
 # Convenience function to update locations of interest.
@@ -40,23 +40,57 @@ def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
                 old.append(loc)
 
 def main():
+    global pose
     # Initialize services
-    cv_service = CVService(model_dir=CV_MODEL_DIR)
-    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
-
-    # Input output
-    # loc and rep should have the same port number
-    loc_service = LocalizationService(host='localhost', port=5566)
-    rep_service = ReportingService(host='localhost', port=5566)
-    
     # initialize robot
+    loc_service = LocalizationService(host='localhost', port=5566)
+
     robot = Robot()
     robot.initialize(conn_type="sta")
     robot.camera.start_video_stream(display=False, resolution='720p')
+
+    p1 = multiprocessing.Process(target = movement, args=(robot,loc_service, ))
+    p2 = multiprocessing.Process(target = take_pic, args=(robot,loc_service, ))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+
+
+    # Main loop
+
+def take_pic(robot, loc_service):
+    global pose
+    cv_service = CVService(model_dir=CV_MODEL_DIR)
+    rep_service = ReportingService(host='localhost', port=5566)
     
     # start the run
     rep_service.start_run()
- 
+
+    # capture image
+    while True:
+        img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
+        pose, clues = loc_service.get_pose()
+        img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/data/imgs/test_img.jpg")
+
+        
+        img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+
+        targets = cv_service.targets_from_image(img)
+        # Submit targets
+        print(pose, img, targets)
+        if targets:
+            logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
+            logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+        time.sleep(0.05)
+            
+
+def movement(robot,loc_service):
+    global pose 
+    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
+
+    # Input output
+
     # Initialize planner
     map_:SignedDistanceGrid = loc_service.get_map()
     # print("map_ jq print width", map_.width)
@@ -83,9 +117,7 @@ def main():
     new_clues = lambda c: c.clue_id not in seen_clues
     # print("new", new_clues)
     # print("seen", seen_clues)
-
-    # Main loop
-
+    random_loi = False
     
     while True:
         # Get new data
@@ -94,11 +126,6 @@ def main():
         # print('clues id', clues[0][0], 'area of interest', clues[0][1])
         pose = pose_filter.update(pose)
         #print("pose2", pose)
-
-        # capture image
-        img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
-
-        img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
     
         # return None
 
@@ -123,19 +150,10 @@ def main():
 
             #Record clues seen before
             seen_clues.update([c.clue_id for c in clues])
-
-        # return None
-        img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
-
-        targets = cv_service.targets_from_image(img)
-
-        # Submit targets
-        if targets:
-            logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
-            logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
         
         if not curr_loi:
             print(len(lois))
+            
             if len(lois) == 0:
                 logging.getLogger('Main').info('No more locations of interest.')
                 # TODO: You ran out of LOIs. You could perform and random search for new
@@ -166,6 +184,7 @@ def main():
                 
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
+                random_loi = True
 
             else:
                 # Get new LOI
@@ -206,6 +225,11 @@ def main():
                     #Obtain the path step
                     curr_wp = path.pop()
                     logging.getLogger('Navigation').info('New waypoint: {}'.format(curr_wp))
+
+                if len(lois) != 0 and random_loi == True:
+                    curr_loi = None
+                    logging.getLogger('Navigation').info('Location Importance Detected')
+                    continue
                 
                 # Calculate distance and heading to waypoint
 
@@ -272,12 +296,13 @@ def main():
                     robot.chassis.drive_speed(x=0, y=0, z=0)
                     time.sleep(2.5)
                     #img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
-                    targets = cv_service.targets_from_image(img)
+                    #targets = cv_service.targets_from_image(img)
                     
                     # Submit targets
-                    if targets:
-                        logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
-                        logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+                    # if targets:
+                    #     logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
+                    #     logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+                random_loi = False
                 continue
         
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety

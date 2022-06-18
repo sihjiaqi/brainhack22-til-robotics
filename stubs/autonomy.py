@@ -78,6 +78,7 @@ def main():
     # Contains a list of Locations Objects dtype
     lois: List[RealLocation] = []
     curr_wp: RealLocation = None    # Location Object
+    step_counter = 0
 
     # Initialize tracker
     # TODO: Participant to tune PID controller values.
@@ -100,26 +101,6 @@ def main():
         # print('clues id', clues[0][0], 'area of interest', clues[0][1])
         pose = pose_filter.update(pose)
         #print("pose2", pose)
-
-        # capture image
-        # robot captures pciture only if n=1, take picture
-        x = np.random.choice(2, p=[0.15, 0.85])
-
-        if x == 0:
-            print("capture image")
-            img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
-            img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
-            
-            targets = cv_service.targets_from_image(img)
-            print("targets", targets)
-
-            # Submit targets
-            if targets:
-                logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
-                logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
-
-        # img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
-        # img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
 
         # return None
 
@@ -146,7 +127,7 @@ def main():
             seen_clues.update([c.clue_id for c in clues])
 
         if not curr_loi:
-            print(len(lois))
+            print("Number of of LOIs", len(lois))
             if len(lois) == 0:
                 logging.getLogger('Main').info('No more locations of interest.')
                 # TODO: You ran out of LOIs. You could perform and random search for new
@@ -182,9 +163,7 @@ def main():
 
             else:
                 # Get new LOI
-                lois.sort(key=lambda l: euclidean_distance(
-                    l, pose), reverse=True)
-
+                lois.sort(key=lambda l: euclidean_distance(l, pose), reverse=True)
                 curr_loi = lois.pop()
 
                 logging.getLogger('Main').info(
@@ -223,12 +202,10 @@ def main():
                     logging.getLogger('Navigation').info('New waypoint: {}'.format(curr_wp))
 
                 # Calculate distance and heading to waypoint
-
                 dist_to_wp = euclidean_distance(pose, curr_wp)
                 # print(dist_to_wp)
 
-                ang_to_wp = np.degrees(np.arctan2(
-                    curr_wp[1]-pose[1], curr_wp[0]-pose[0]))
+                ang_to_wp = np.degrees(np.arctan2(curr_wp[1]-pose[1], curr_wp[0]-pose[0]))
                 # print(ang_to_wp)
 
                 ang_diff = -(ang_to_wp - pose[2])  # body frame
@@ -267,25 +244,47 @@ def main():
                     vel_cmd[0] = 0.0
                 #print("abs(ang_diff) > ANGLE_THRESHOLD_DEG", abs(ang_diff) > ANGLE_THRESHOLD_DEG)
 
-                # Send command to robot
+                # send command to robot to travel to the next waypoint
                 robot.chassis.drive_speed(x=vel_cmd[0], z=vel_cmd[1])
+                step_counter += 1
+                print("steps taken by robot", step_counter)
 
+                # capture images on every 100 steps
+                if step_counter == 100:
+                    print("robot moved 100 steps", step_counter)
+                    # reset counter
+                    step_counter = 0
+                    # capture image
+                    # img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
+                    img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
+                    img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+            
+                    targets = cv_service.targets_from_image(img)
+
+                    # submit targets
+                    if targets:
+                       logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
+                       logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+                    
             else:
                 logging.getLogger('Navigation').info('End of path.')
                 curr_loi = None
-                # return None
 
-                # TODO: Perform search behaviour? Participant to complete.\
-
+                # TODO: Perform search behaviour? Participant to complete.
                 for i in range(8):
                     robot.chassis.drive_speed(z=22.5)
                     time.sleep(2.5)
                     robot.chassis.drive_speed(x=0, y=0, z=0)
                     time.sleep(2.5)
-                    # img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
+
+                    # capture images when rotating
+                    # img = robot.camera.read_cv2_image(strategy='newest') # strategy is useless (unused)
+                    img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
+                    img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+            
                     targets = cv_service.targets_from_image(img)
 
-                    # Submit targets
+                    # submit targets
                     if targets:
                         logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
                         logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))

@@ -5,6 +5,8 @@ import onnxruntime as ort
 # import onnx
 import torchvision.transforms as transforms
 import cv2
+import numpy as np
+import torch
 
 
 class CVService:
@@ -21,6 +23,7 @@ class CVService:
         # self.onnx_model = onnx.load(self.model_path)
         self.session = ort.InferenceSession(self.model_path, providers=['CUDAExecutionProvider'])
         self.image_list = []
+        self.prediction_counter = 0
 
         # TODO: Participant to complete.
 
@@ -38,7 +41,10 @@ class CVService:
             Detected targets.
         '''
         obj_arr = []
-        # Process image and detect targets
+        
+        self.prediction_counter+=1
+        #print("number of img captured", self.prediction_counter)
+
         # convert numpy to tensor
         to_tensor = transforms.ToTensor()
         tensor_img = to_tensor(img)
@@ -46,7 +52,7 @@ class CVService:
 
         # make prediction
         result = self.session.run(None, {'input': tensor_img.numpy()})
-        print(result)
+        #print(result)
         
         # loop through each obj found in an image
         for item in range(len(result[0])):
@@ -61,7 +67,7 @@ class CVService:
             bbox = BoundingBox(x_center, y_center, width, height)
 
             obj_arr.append(DetectedObject(int(self.id), int(result[1][item]), bbox))
-            print(obj_arr)
+        #print(obj_arr)
         return obj_arr
         # TODO: Participant to complete.
 

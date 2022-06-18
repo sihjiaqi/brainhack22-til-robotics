@@ -26,11 +26,8 @@ logging.basicConfig(level=logging.INFO,
 REACHED_THRESHOLD_M = 0.25   # TODO: Participant may tune.
 ANGLE_THRESHOLD_DEG = 20.0  # TODO: Participant may tune.
 ROBOT_RADIUS_M = 0.25       # TODO: Participant may tune.
-NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/nlp_model.onnx"          # TODO: Participant to fill in.
-CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
-
-
-
+NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/nlp_model.onnx"          # TODO: Participant to fill in.
+CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
 
 # Convenience function to update locations of interest.
 def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:

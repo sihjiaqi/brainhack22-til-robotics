@@ -19,8 +19,8 @@ class NLPService:
             Path of model file to load.
         '''
         self.sess = ort.InferenceSession(model_dir, providers=["CUDAExecutionProvider"])
-        self.mfcc_scaler = load('/home/joshua/Documents/GitHub/brainhack22_robotics/model/NLP_MFCC_MMScaler.bin')
-        self.melspec_scaler = load('/home/joshua/Documents/GitHub/brainhack22_robotics/model/NLP_MelSpec_MMScaler.bin')
+        self.mfcc_scaler = load('/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/NLP_MFCC_MMScaler.bin')
+        self.melspec_scaler = load('/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/NLP_MelSpec_MMScaler.bin')
         self.input_name1 = self.sess.get_inputs()[0].name
         self.input_name2 = self.sess.get_inputs()[1].name
         self.output_name = self.sess.get_outputs()[0].name
@@ -109,8 +109,8 @@ class MockNLPService:
             Path of model file to load.
         '''
         self.sess = ort.InferenceSession(model_dir, providers=["CUDAExecutionProvider"])
-        self.mfcc_scaler = load('/home/joshua/Documents/GitHub/brainhack22_robotics/model/NLP_MFCC_MMScaler.bin')
-        self.melspec_scaler = load('/home/joshua/Documents/GitHub/brainhack22_robotics/model/NLP_MelSpec_MMScaler.bin')
+        self.mfcc_scaler = load('/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/NLP_MFCC_MMScaler.bin')
+        self.melspec_scaler = load('/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/NLP_MelSpec_MMScaler.bin')
         self.input_name1 = self.sess.get_inputs()[0].name
         self.input_name2 = self.sess.get_inputs()[1].name
         self.output_name = self.sess.get_outputs()[0].name

@@ -30,6 +30,11 @@ NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/mo
 CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
 
 
+
+class Region_tuple(NamedTuple):
+    
+
+
 # Convenience function to update locations of interest.
 def update_locations(old:List[RealLocation], new:List[RealLocation]) -> None:
     '''Update locations with no duplicates.'''

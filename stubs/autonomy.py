@@ -32,7 +32,7 @@ CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/mod
 
 
 class Region_tuple(NamedTuple):
-    
+    pass
 
 
 # Convenience function to update locations of interest.

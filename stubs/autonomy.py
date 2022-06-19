@@ -48,7 +48,7 @@ def update_locations(old: List[RealLocation], new: List[RealLocation]) -> None:
 def main():
     # Initialize services
     cv_service = CVService(model_dir=CV_MODEL_DIR)
-    nlp_service = MockNLPService(model_dir=NLP_MODEL_DIR)
+    nlp_service = NLPService(model_dir=NLP_MODEL_DIR)
 
     # Input output
     # loc and rep should have the same port number
@@ -92,7 +92,7 @@ def main():
     def new_clues(c): return c.clue_id not in seen_clues
     # print("new", new_clues)
     # print("seen", seen_clues)
-
+    random_loi = False
     # Main loop
     while True:
         # Get new data
@@ -160,6 +160,7 @@ def main():
 
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
+                random_loi = True
 
             else:
                 # Get new LOI
@@ -190,6 +191,7 @@ def main():
                 # plt.show()
                 curr_wp = None
                 logging.getLogger('Main').info('Path planned.')
+                
 
         else:
             # There is a current LOI objective.
@@ -200,6 +202,11 @@ def main():
                     # Obtain the path step
                     curr_wp = path.pop()
                     logging.getLogger('Navigation').info('New waypoint: {}'.format(curr_wp))
+                
+                if len(lois) != 0 and random_loi == True:
+                    curr_loi = None
+                    logging.getLogger('Navigation').info('Location Importance Detected')
+                    continue
 
                 # Calculate distance and heading to waypoint
                 dist_to_wp = euclidean_distance(pose, curr_wp)
@@ -288,6 +295,7 @@ def main():
                     if targets:
                         logging.getLogger('Main').info('{} targets detected.'.format(len(targets)))
                         logging.getLogger('Reporting').info(rep_service.report(pose, img, targets))
+                random_loi = False
                 continue
 
     robot.chassis.drive_speed(x=0.0, y=0.0, z=0.0)  # set stop for safety

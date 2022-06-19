@@ -38,6 +38,16 @@ clues:
       y: 3
     audio_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
 
+  - clue_id: 3
+    trigger:
+      x: 3.0
+      y: 1.5
+      r: 1
+    location:
+      x: 3
+      y: 4
+    audio_file: '/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/audio/SM4_F48_A0100.wav'
+
 # targets
 targets:
   - target_id: 1

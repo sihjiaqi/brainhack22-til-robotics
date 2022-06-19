@@ -186,7 +186,7 @@ def movement(robot,loc_service):
     width = map_.width/2
     height = map_.height
 
-    unexplored_list = create_regions(int(width), int(height), 0.3)
+    unexplored_list = create_regions(int(width), int(height), 0.33,0.25)
     
     while True:
         # Get new data

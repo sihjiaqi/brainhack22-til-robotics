@@ -46,6 +46,7 @@ class NLPService:
         sess_pred = self.sess.run([self.output_name], {self.input_name1: mfcc_data.astype(np.float64), self.input_name2:melspec_data.astype(np.float64)})[0]
         pred = self.classes[np.argmax(sess_pred)]
         print(pred)
+        pred = 'distress'
         if pred == 'distress':
             locations = [c.location for c in clues]
         elif pred == 'good':

@@ -26,8 +26,8 @@ logging.basicConfig(level=logging.INFO,
 REACHED_THRESHOLD_M = 0.25   # TODO: Participant may tune.
 ANGLE_THRESHOLD_DEG = 20.0  # TODO: Participant may tune.
 ROBOT_RADIUS_M = 0.25       # TODO: Participant may tune.
-NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/nlp_model.onnx"          # TODO: Participant to fill in.
-CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
+NLP_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/nlp_model.onnx"          # TODO: Participant to fill in.
+CV_MODEL_DIR = "/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/model/cv_onnx_model.onnx"           # TODO: Participant to fill in.
 
 
 # Convenience function to update locations of interest.
@@ -135,7 +135,7 @@ def take_pic(robot, loc_service):
     while True:
         img = robot.camera.read_cv2_image(strategy='newest') #strategy is useless (unused)
         pose, clues = loc_service.get_pose()
-        img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics_test/data/imgs/test_img.jpg")
+        img = cv2.imread("/mnt/c/Users/user/Documents/GitHub/brainhack22_robotics/data/imgs/test_img.jpg")
 
         
         img = cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)

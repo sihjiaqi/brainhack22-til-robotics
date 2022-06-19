@@ -44,6 +44,69 @@ def update_locations(old: List[RealLocation], new: List[RealLocation]) -> None:
                     'New location of interest: {}'.format(loc))
                 old.append(loc)
 
+def create_regions(width, height, region_size_w, region_size_h):
+
+    region_width_size = int(region_size_w * width)
+    region_height_size = int(region_size_h * height)
+    
+
+    x_regions = list(range(0, width+1, region_width_size))[1:]
+    y_regions = list(range(0, height+1, region_height_size))[1:]
+
+    if x_regions[-1] != width:
+        x_regions.pop()
+        x_regions.append(width)
+    
+    if y_regions[-1] != height:
+        y_regions.pop()
+        y_regions.append(height)
+
+    print(x_regions)
+    print(y_regions)
+
+    x_q1 = region_size_w * width 
+    x_q3 = (1-region_size_w) * width
+
+    y_q1 = region_size_h * height 
+    y_q3 = (1-region_size_h) * height
+
+    # print(x_q1, x_q3)
+    # print(y_q1, y_q3)
+
+    regions_of_interest = []
+
+    
+    min_region_y = 0
+
+    for y in y_regions:
+        min_region_x = 0
+        if y <= y_q1 or y > y_q3: 
+            for x in x_regions:
+                max_region = (x, y)
+                min_region = (min_region_x, min_region_y)
+                regions_of_interest.append((min_region, max_region))
+                
+                last_col_x_region = min_region_x    
+                min_region_x = x 
+
+        
+        else:
+            for x in x_regions:
+                if x <= x_q1:
+                    max_region = (x, y)
+                    min_region = (min_region_x, min_region_y)
+
+                    regions_of_interest.append((min_region, max_region))
+
+                elif x > x_q3:
+                    max_region = (x, y)
+                    min_region = (last_col_x_region, min_region_y)
+
+                    regions_of_interest.append((min_region, max_region))
+                    
+        min_region_y = y
+                
+    return regions_of_interest
 
 def main():
     # Initialize services
@@ -93,6 +156,11 @@ def main():
     # print("new", new_clues)
     # print("seen", seen_clues)
     random_loi = False
+
+    width = map_.width/2
+    height = map_.height
+
+    unexplored_list = create_regions(int(width), int(height), 0.33,0.25)
     # Main loop
     while True:
         # Get new data
@@ -122,6 +190,15 @@ def main():
             # print("New", new_lois)
             # print("Old", lois)
             update_locations(lois, new_lois)
+            print('lois new', new_lois)
+            if new_lois:
+                for new_loi in new_lois:
+                    coord = (new_loi.x, new_loi.y)
+                    print('coord', coord)
+                    for i in unexplored_list:
+                        if (coord[0] > i[0][0] and coord[0] < i[1][0]) and (coord[1] > i[0][1] and coord[1] < i[1][1]):
+                            unexplored_list.remove(i)
+                            print(i)
 
             # Record clues seen before
             seen_clues.update([c.clue_id for c in clues])
@@ -133,14 +210,30 @@ def main():
                 # TODO: You ran out of LOIs. You could perform and random search for new
                 # clues or targets
 
-                while True:
-                    # generate random pixel combination of grid coord
-                    x = np.random.randint(0, map_.width/2)
-                    y = np.random.randint(0, map_.height)
+                print(len(unexplored_list))
+                if len(unexplored_list) != 0:
+                    unexplored_region = unexplored_list.pop(np.random.randint(0, len(unexplored_list)))
+                    region_x_min = unexplored_region[0][0]
+                    region_y_min = unexplored_region[0][1] 
 
-                    # check if LOI is an passable
-                    if map_.grid[y][x] > 0:
-                        break
+                    region_x_max = unexplored_region[1][0]
+                    region_y_max = unexplored_region[1][1] 
+                    print(unexplored_region)
+                    while True:
+                        x = np.random.randint(region_x_min + 1, region_x_max)
+                        y = np.random.randint(region_y_min + 1, region_y_max)
+                        # check if LOI is an passable
+                        if map_.grid[y][x] > 0:
+                            break
+                else:
+                    while True:
+                        # generate random pixel combination of grid coord
+                        x = np.random.randint(0, width)
+                        y = np.random.randint(0, height)
+
+                        # check if LOI is an passable
+                        if map_.grid[y][x] > 0:
+                            break
 
                 real_width = x * map_.scale
                 real_height = y * map_.scale

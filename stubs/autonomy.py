@@ -193,8 +193,9 @@ def main():
             print('lois new', new_lois)
             if new_lois:
                 for new_loi in new_lois:
-                    coord = (new_loi.x, new_loi.y)
+                    coord = (new_loi.x/map_.scale, new_loi.y/map_.scale)
                     print('coord', coord)
+                    
                     for i in unexplored_list:
                         if (coord[0] > i[0][0] and coord[0] < i[1][0]) and (coord[1] > i[0][1] and coord[1] < i[1][1]):
                             unexplored_list.remove(i)
@@ -210,7 +211,6 @@ def main():
                 # TODO: You ran out of LOIs. You could perform and random search for new
                 # clues or targets
 
-                print(len(unexplored_list))
                 if len(unexplored_list) != 0:
                     unexplored_region = unexplored_list.pop(np.random.randint(0, len(unexplored_list)))
                     region_x_min = unexplored_region[0][0]
@@ -234,6 +234,9 @@ def main():
                         # check if LOI is an passable
                         if map_.grid[y][x] > 0:
                             break
+
+                print(len(unexplored_list))
+                print(unexplored_list)
 
                 real_width = x * map_.scale
                 real_height = y * map_.scale
@@ -299,6 +302,8 @@ def main():
                 if len(lois) != 0 and random_loi == True:
                     curr_loi = None
                     logging.getLogger('Navigation').info('Location Importance Detected')
+                    if unexplored_region != 0:
+                        unexplored_list.append(unexplored_region)
                     continue
 
                 # Calculate distance and heading to waypoint

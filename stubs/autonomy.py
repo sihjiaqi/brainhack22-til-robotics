@@ -304,6 +304,7 @@ def main():
                     logging.getLogger('Navigation').info('Location Importance Detected')
                     if unexplored_region != 0:
                         unexplored_list.append(unexplored_region)
+                        unexplored_region = 0
                     continue
 
                 # Calculate distance and heading to waypoint
